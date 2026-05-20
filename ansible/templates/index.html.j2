@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto 01 - Administração de Sistemas Abertos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background-color: #fff;
+            max-width: 650px;
+            width: 100%;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-top: 5px solid #0056b3;
+        }
+        h1 {
+            color: #0056b3;
+            margin-top: 0;
+            font-size: 24px;
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .label {
+            font-weight: bold;
+            color: #555;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .value {
+            font-size: 16px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #ccc;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>IFPB - Engenharia de Computação</h1>
+    
+    <div class="section">
+        <span class="label">Componente Curricular</span>
+        <div class="value">Administração de Sistemas Abertos (DevOps)</div>
+    </div>
+
+    <div class="section">
+        <span class="label">Descrição do Projeto</span>
+        <div class="value">
+            Projeto 01: Infraestrutura automatizada como Código (IaC) com provisionamento multiplataforma via Vagrant e gerência de configuração centralizada utilizando Ansible.
+        </div>
+    </div>
+
+    <div class="section">
+        <span class="label">Identificação do Aluno</span>
+        <div class="value"><strong>Nome:</strong> Victor<</div>
+    </div>
+
+    <div class="section">
+        <span class="label">Escopo de Rede (Matrícula Final 14)</span>
+        <div class="value">
+            <strong>Domínio:</strong> {{ domain | default('victor.devops') }}<br>
+            <strong>IP deste Servidor (App):</strong> {{ ansible_default_ipv4.address | default('192.168.56.116') }}
+        </div>
+    </div>
+
+    <div class="footer">
+        Ambiente provisionado automaticamente via Ansible Playbook.
+    </div>
+</div>
+
+</body>
+</html>
