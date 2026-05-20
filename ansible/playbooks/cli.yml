@@ -1,0 +1,60 @@
+- name: Configurar host cliente
+  hosts: cli
+  become: yes
+
+  tasks:
+    - name: Instalar firefox-esr e xauth
+      apt:
+        name:
+          - firefox-esr
+          - xauth
+        state: present
+
+    - name: Configurar SSH para permitir X11 forwarding
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?X11Forwarding'
+        line: 'X11Forwarding yes'
+        state: present
+      notify: restart ssh
+
+    - name: Instalar autofs
+      apt:
+        name: autofs
+        state: present
+
+    - name: Iniciar e habilitar serviço autofs
+      service:
+        name: autofs
+        state: started
+        enabled: yes
+
+    - name: Criar ponto de montagem /var/nfs
+      file:
+        path: /var/nfs
+        state: directory
+
+    - name: Configurar autofs principal
+      lineinfile:
+        path: /etc/auto.master
+        line: '/var/nfs /etc/auto.nfs'
+        state: present
+        insertafter: EOF
+
+    - name: Configurar mapeamento NFS
+      copy:
+        dest: /etc/auto.nfs
+        content: "nfs -fstype=nfs,rw,soft,intr 192.168.56.114:/dados/nfs"
+        mode: 0644
+      notify: restart autofs
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted
+
+    - name: restart autofs
+      service:
+        name: autofs
+        state: restarted
