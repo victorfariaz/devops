@@ -1,0 +1,55 @@
+---
+- name: Configurar servidor de banco de dados
+  hosts: db
+  become: yes
+
+  tasks:
+    # 1. Instalação do MariaDB
+    - name: Instalar mariadb-server
+      apt:
+        name: mariadb-server
+        state: present
+
+    - name: Iniciar e habilitar serviço MariaDB
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    # 2. Montagem do NFS
+    - name: Instalar autofs
+      apt:
+        name: autofs
+        state: present
+
+    - name: Iniciar e habilitar serviço autofs
+      service:
+        name: autofs
+        state: started
+        enabled: yes
+
+    - name: Criar ponto de montagem /var/nfs
+      file:
+        path: /var/nfs
+        state: directory
+
+    - name: Configurar autofs principal (auto.master)
+      lineinfile:
+        path: /etc/auto.master
+        line: '/var/nfs /etc/auto.nfs'
+        state: present
+        insertafter: EOF
+
+    - name: Configurar mapeamento direto do autofs (auto.nfs)
+      blockinfile:
+        path: /etc/auto.nfs
+        create: yes
+        block: |
+          nfs -fstype=nfs,rw,soft,intr 192.168.56.114:/dados/nfs
+      notify: restart autofs
+
+  handlers:
+    - name: restart autofs
+      service:
+        name: autofs
+        state: restarted
