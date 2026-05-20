@@ -1,0 +1,12 @@
+---
+# Etapa 1: Atualização, Usuários, NTP e Segurança SSH em TODAS as máquinas
+- import_playbook: playbooks/common.yml
+
+# Etapa 2: Infraestrutura de Rede e Armazenamento no Servidor de Arquivos
+- import_playbook: playbooks/arq-dhcp-dns.yml
+- import_playbook: playbooks/arq-lvm-nfs.yml
+
+# Etapa 3: Serviços Finais e Clientes Autofs (Roda em paralelo nos destinos)
+- import_playbook: playbooks/db.yml
+- import_playbook: playbooks/app.yml
+- import_playbook: playbooks/cli.yml
