@@ -60,5 +60,3 @@ vagrant up
 
 Este comando baixa o *box* do sistema, cria as máquinas virtuais desabilitando os *guest additions*, configura as interfaces de rede e invoca automaticamente os *playbooks* do Ansible para finalizar o escopo de software.
 * Garanta que as reservas de IP no DHCP batam com `114` (DNS), `115` (DB) e `116` (APP).
-
-Boa sorte na entrega do projeto! Se precisar de ajuda para ajustar o código do Ansible para essa versão individual, é só avisar.
