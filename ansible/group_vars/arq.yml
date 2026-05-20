@@ -1,0 +1,57 @@
+# ==========================================
+# Informações Básicas e Domínio
+# ==========================================
+domain: "victor.devops"
+
+# ==========================================
+# Configurações do Servidor DHCP Autoritativo
+# ==========================================
+dhcp_domain: "victor.devops"
+dhcp_dns_server: "192.168.56.114"
+dhcp_range_start: 50
+dhcp_range_end: 100
+dhcp_default_lease_time: 180
+dhcp_max_lease_time: 3600
+dhcp_gateway: "192.168.56.1"
+
+# Reservas DHCP estáticas por MAC para a infraestrutura
+dhcp_static_reservations:
+  - name: "db"
+    mac: "08:00:27:00:00:01"
+    ip: "192.168.56.115"
+  - name: "app"
+    mac: "08:00:27:00:00:02"
+    ip: "192.168.56.116"
+
+# ==========================================
+# Configurações do Servidor DNS Autoritativo
+# ==========================================
+dns_forwarders:
+  - "1.1.1.1"
+  - "8.8.8.8"
+dns_allow_recursion: "192.168.56.0/24"
+dns_allow_query: "192.168.56.0/24"
+
+# Definição das Zonas DNS (Direta e Reversa)
+dns_zones:
+  - name: "victor.devops"
+    type: "master"
+    file: "/etc/bind/db.victor.devops"
+  - name: "56.168.192.in-addr.arpa"
+    type: "master"
+    file: "/etc/bind/db.56.168.192"
+
+# ==========================================
+# Configurações de Armazenamento LVM
+# ==========================================
+lvm_volume_group: "dados"
+lvm_logical_volume: "ifpb"
+lvm_size: "15G"
+lvm_mount_point: "/dados"
+
+# ==========================================
+# Configurações de Compartilhamento NFS
+# ==========================================
+nfs_share_path: "/dados/nfs"
+nfs_user: "nfs-ifpb"
+nfs_allowed_network: "192.168.56.0/24"
