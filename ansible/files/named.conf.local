@@ -1,0 +1,9 @@
+zone "victor.devops" {
+    type master;
+    file "/etc/bind/db.victor.devops";
+};
+
+zone "56.168.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/db.56.168.192";
+};
