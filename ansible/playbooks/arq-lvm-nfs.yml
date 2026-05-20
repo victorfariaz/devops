@@ -1,0 +1,78 @@
+- name: Configurar LVM e NFS no servidor arq
+  hosts: arq
+  become: yes
+
+  tasks:
+    # 1. Instalar pacotes necessários
+    - name: Instalar pacotes necessários
+      apt:
+        name:
+          - lvm2
+          - nfs-kernel-server
+        state: present
+
+    # 2. Configuração do LVM utilizando módulos nativos do Ansible
+    - name: Criar Volume Group (dados) unindo os 3 discos adicionais
+      lvg:
+        vg: dados
+        pvs: /dev/sdb,/dev/sdc,/dev/sdd
+
+    - name: Criar Logical Volume (ifpb) com 15 GB
+      lvol:
+        vg: dados
+        lv: ifpb
+        size: 15G
+
+    - name: Formatar o Logical Volume com o sistema ext4
+      filesystem:
+        fstype: ext4
+        dev: /dev/dados/ifpb
+
+    # 3. Montagem Automatizada do LVM
+    - name: Criar diretório base /dados
+      file:
+        path: /dados
+        state: directory
+        mode: 0755
+
+    - name: Configurar fstab e garantir montagem automática do LV em /dados
+      mount:
+        path: /dados
+        src: /dev/dados/ifpb
+        fstype: ext4
+        state: mounted
+
+    # 4. Configuração de Segurança do Serviço NFS
+    - name: Criar diretório compartilhado NFS dentro do LVM
+      file:
+        path: /dados/nfs
+        state: directory
+
+    - name: Criar usuário de sistema nfs-ifpb sem shell de acesso
+      user:
+        name: nfs-ifpb
+        shell: /usr/sbin/nologin
+        system: yes
+      register: nfs_user_info
+
+    - name: Ajustar permissão de escrita exclusiva para o usuário nfs-ifpb
+      file:
+        path: /dados/nfs
+        state: directory
+        owner: nfs-ifpb
+        group: ifpb
+        mode: 0770
+
+    - name: Configurar arquivo exports mapeando requisições remotas para o nfs-ifpb
+      copy:
+        dest: /etc/exports
+        content: |
+          /dados/nfs 192.168.56.0/24(rw,sync,no_subtree_check,all_squash,anonuid={{ nfs_user_info.uid }},anongid={{ nfs_user_info.group }})
+        mode: 0644
+      notify: restart nfs
+
+  handlers:
+    - name: restart nfs
+      service:
+        name: nfs-kernel-server
+        state: restarted
