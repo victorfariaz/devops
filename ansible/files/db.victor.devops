@@ -1,0 +1,16 @@
+; Zona DNS direta para victor.devops
+$TTL    604800
+@       IN      SOA     arq.victor.devops. root.victor.devops. (
+                      2         ; Serial
+                 604800         ; Refresh
+                  86400         ; Retry
+                2419200         ; Expire
+                 604800 )       ; Negative Cache TTL
+
+; Servidores de nome
+        IN      NS      arq.victor.devops.
+
+; Registros A
+arq     IN      A       192.168.56.114
+db      IN      A       192.168.56.115
+app     IN      A       192.168.56.116
