@@ -1,0 +1,16 @@
+; Zona DNS reversa para 192.168.56.0/24
+$TTL    604800
+@       IN      SOA     arq.victor.devops. root.victor.devops. (
+                      1         ; Serial
+                 604800         ; Refresh
+                  86400         ; Retry
+                2419200         ; Expire
+                 604800 )       ; Negative Cache TTL
+
+; Servidores de nome
+        IN      NS      arq.victor.devops.
+
+; Registros PTR
+114     IN      PTR     arq.victor.devops.
+115     IN      PTR     db.victor.devops.
+116     IN      PTR     app.victor.devops.
