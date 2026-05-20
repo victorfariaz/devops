@@ -1,0 +1,108 @@
+- name: Configurações comuns e segurança de todas as VMs
+  hosts: all
+  become: yes
+
+  tasks:
+    # 1. Atualização do Sistema Operacional
+    - name: Atualizar o cache do apt e realizar o upgrade do sistema
+      apt:
+        update_cache: yes
+        upgrade: dist
+        cache_valid_time: 3600
+
+    # 2. Configurações de Fuso Horário e NTP (Chrony)
+    - name: Garantir que o pacote chrony está instalado (NTP)
+      apt:
+        name: chrony
+        state: present
+
+    - name: Ajustar a zona de tempo para America/Recife
+      timezone:
+        name: "America/Recife"
+
+    - name: Configurar o servidor pool.ntp.br no Chrony
+      lineinfile:
+        path: /etc/chrony/chrony.conf
+        regexp: '^pool '
+        line: 'pool pool.ntp.br iburst'
+        state: present
+      notify: restart chrony
+
+    # 3. Gerenciamento de Grupos e Usuários
+    - name: Criar o grupo administrativo 'ifpb'
+      group:
+        name: ifpb
+        state: present
+
+    - name: Criar o usuário 'victor' e adicioná-lo aos grupos corretos
+      user:
+        name: victor
+        group: ifpb
+        groups: vagrant
+        append: yes
+        shell: /bin/bash
+        state: present
+
+    - name: Permitir que usuários do grupo ifpb tenham acesso de root via sudo sem senha
+      copy:
+        dest: /etc/sudoers.d/ifpb
+        content: "%ifpb ALL=(ALL) NOPASSWD:ALL"
+        mode: 0440
+
+    # 4. Endurecimento (Hardening) e Segurança do SSH
+    - name: Criar diretório .ssh para o usuário victor
+      file:
+        path: /home/victor/.ssh
+        state: directory
+        owner: victor
+        group: ifpb
+        mode: 0700
+
+    - name: Gerar e configurar par de chaves públicas para o usuário victor
+      openssh_keypair:
+        path: /home/victor/.ssh/id_rsa
+        owner: victor
+        group: ifpb
+        comment: "victor@devops"
+      register: victor_ssh_key
+
+    - name: Autorizar a própria chave pública gerada no authorized_keys do usuário
+      authorized_key:
+        user: victor
+        state: present
+        key: "{{ victor_ssh_key.public_key }}"
+
+    - name: Configurar banner com mensagem de saudação obrigatória do SSH
+      copy:
+        dest: /etc/issue.net
+        content: "Acesso apenas para pessoas com autorização expressa!!!\n"
+        mode: 0644
+
+    - name: Aplicar restrições de segurança no arquivo de configuração do SSH
+      blockinfile:
+        path: /etc/ssh/sshd_config
+        block: |
+          PasswordAuthentication no
+          PubkeyAuthentication yes
+          PermitRootLogin no
+          AllowGroups vagrant ifpb
+          Banner /etc/issue.net
+        state: present
+      notify: restart ssh
+
+    # 5. Instalação do cliente NFS (Requisito para montagens automáticas remotas)
+    - name: Instalar cliente NFS comum em todas as máquinas
+      apt:
+        name: nfs-common
+        state: present
+
+  handlers:
+    - name: restart chrony
+      service:
+        name: chrony
+        state: restarted
+
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted
